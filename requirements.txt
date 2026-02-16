@@ -1,0 +1,12 @@
+# Analysis Engine Dependencies
+# Minimal set for containerized Python analysis
+
+# YAML parsing (for environment.yml)
+PyYAML==6.0.1
+
+# No other dependencies needed!
+# Analysis engine uses only stdlib:
+# - pathlib for file operations
+# - re for pattern matching
+# - subprocess for git commands
+# - json for data serialization

@@ -1,0 +1,189 @@
+{
+  "checks": {
+    "environment": {
+      "weight": 25,
+      "items": [
+        {
+          "id": "env_file_exists",
+          "name": "Environment file exists",
+          "description": "Repository contains requirements.txt, environment.yml, Dockerfile, or pyproject.toml",
+          "points": 10,
+          "files": ["requirements.txt", "environment.yml", "Dockerfile", "pyproject.toml", "setup.py", "Pipfile"]
+        },
+        {
+          "id": "dependencies_pinned",
+          "name": "Dependencies are pinned",
+          "description": "All dependencies specify exact versions (e.g., package==1.2.3)",
+          "points": 10,
+          "severity": "critical"
+        },
+        {
+          "id": "python_version_specified",
+          "name": "Python version specified",
+          "description": "Python version is explicitly declared",
+          "points": 5,
+          "files": [".python-version", "runtime.txt", "Dockerfile"]
+        }
+      ]
+    },
+    "randomness": {
+      "weight": 20,
+      "items": [
+        {
+          "id": "seed_detection",
+          "name": "Random seed set",
+          "description": "Code contains random seed initialization",
+          "points": 10,
+          "patterns": [
+            "random.seed\\(",
+            "np.random.seed\\(",
+            "torch.manual_seed\\(",
+            "tf.random.set_seed\\(",
+            "set.seed\\("
+          ]
+        },
+        {
+          "id": "seed_documented",
+          "name": "Seed value documented",
+          "description": "Random seed value is documented in README or code comments",
+          "points": 5
+        },
+        {
+          "id": "deterministic_flags",
+          "name": "Deterministic mode enabled",
+          "description": "Frameworks configured for deterministic behavior",
+          "points": 5,
+          "patterns": [
+            "torch.backends.cudnn.deterministic",
+            "TF_DETERMINISTIC_OPS",
+            "CUBLAS_WORKSPACE_CONFIG"
+          ]
+        }
+      ]
+    },
+    "data": {
+      "weight": 20,
+      "items": [
+        {
+          "id": "data_availability",
+          "name": "Data availability statement",
+          "description": "README or docs mention where to get data",
+          "points": 8,
+          "patterns": [
+            "data available",
+            "dataset.*download",
+            "data.*https?://",
+            "zenodo.org",
+            "figshare.com"
+          ]
+        },
+        {
+          "id": "data_scripts",
+          "name": "Data download/preprocessing scripts",
+          "description": "Scripts to fetch or preprocess data",
+          "points": 7,
+          "files": ["download_data.py", "preprocess.py", "prepare_data.sh", "data/README.md"]
+        },
+        {
+          "id": "sample_data",
+          "name": "Sample data included",
+          "description": "Repository contains sample data for testing",
+          "points": 5,
+          "directories": ["data/", "examples/", "sample/"]
+        }
+      ]
+    },
+    "documentation": {
+      "weight": 20,
+      "items": [
+        {
+          "id": "readme_exists",
+          "name": "README exists",
+          "description": "Repository has a README file",
+          "points": 5,
+          "files": ["README.md", "README.rst", "README.txt"]
+        },
+        {
+          "id": "installation_instructions",
+          "name": "Installation instructions",
+          "description": "Clear steps to install dependencies",
+          "points": 5,
+          "patterns": ["## Install", "## Setup", "pip install", "conda install"]
+        },
+        {
+          "id": "usage_examples",
+          "name": "Usage examples",
+          "description": "Example code or commands to run",
+          "points": 5,
+          "patterns": ["## Usage", "## Example", "python main.py", "## Quick Start"]
+        },
+        {
+          "id": "expected_output",
+          "name": "Expected output documented",
+          "description": "Documentation includes expected results or outputs",
+          "points": 5,
+          "patterns": ["expected output", "results should", "expected.*accuracy", "should produce"]
+        }
+      ]
+    },
+    "testing": {
+      "weight": 15,
+      "items": [
+        {
+          "id": "tests_exist",
+          "name": "Tests exist",
+          "description": "Repository contains test files",
+          "points": 8,
+          "patterns": ["test_*.py", "*_test.py"],
+          "directories": ["tests/", "test/"]
+        },
+        {
+          "id": "ci_configured",
+          "name": "CI/CD configured",
+          "description": "Continuous integration setup (GitHub Actions, etc.)",
+          "points": 5,
+          "files": [".github/workflows/", ".gitlab-ci.yml", ".travis.yml", "Jenkinsfile"]
+        },
+        {
+          "id": "test_coverage",
+          "name": "Test coverage reporting",
+          "description": "Coverage tools configured",
+          "points": 2,
+          "patterns": ["coverage", "pytest-cov", "codecov"]
+        }
+      ]
+    }
+  },
+  "thresholds": {
+    "excellent": 90,
+    "good": 75,
+    "fair": 60,
+    "poor": 40
+  },
+  "recommendations": {
+    "env_file_exists": {
+      "fix": "Create a requirements.txt or environment.yml file listing all dependencies",
+      "example": "Run: pip freeze > requirements.txt"
+    },
+    "dependencies_pinned": {
+      "fix": "Pin all dependency versions to exact numbers",
+      "example": "Change 'numpy' to 'numpy==1.24.3'"
+    },
+    "seed_detection": {
+      "fix": "Add random seed initialization at the start of your main script",
+      "example": "import random; random.seed(42)\nimport numpy as np; np.random.seed(42)"
+    },
+    "data_availability": {
+      "fix": "Add a data availability section to your README with download links",
+      "example": "## Data\nDataset available at: https://zenodo.org/record/..."
+    },
+    "readme_exists": {
+      "fix": "Create a README.md file describing your project",
+      "example": "Include: purpose, installation, usage, data, citation"
+    },
+    "tests_exist": {
+      "fix": "Add basic tests to verify core functionality",
+      "example": "Create tests/test_main.py with pytest"
+    }
+  }
+}

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproducibility Validator - Verify Your Research Code</title>
+    <meta name="description" content="Free tool to validate scientific code for reproducibility. Get a score, recommendations, and badges for your papers.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --success: #44cc11;
+            --warning: #dfb317;
+            --danger: #e05d44;
+            --bg: #ffffff;
+            --text: #1f2937;
+            --gray: #6b7280;
+            --light: #f3f4f6;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        /* Main Form */
+        .validator-section {
+            padding: 60px 0;
+            background: var(--light);
+        }
+        
+        .validator-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="url"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 40px;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            background: var(--light);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .score-number {
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+        
+        .score-excellent { color: var(--success); }
+        .score-good { color: #97ca00; }
+        .score-fair { color: var(--warning); }
+        .score-poor { color: #fe7d37; }
+        .score-critical { color: var(--danger); }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .category-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .category-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .category-score {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .recommendations {
+            margin-top: 30px;
+        }
+        
+        .recommendation {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .rec-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .rec-priority {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .priority-critical {
+            background: #fee;
+            color: var(--danger);
+        }
+        
+        .priority-high {
+            background: #fef3cd;
+            color: #856404;
+        }
+        
+        .priority-medium {
+            background: #e7f3ff;
+            color: #004085;
+        }
+        
+        .rec-example {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        
+        /* Features */
+        .features {
+            padding: 80px 0;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature {
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1f2937;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        /* Ad Space */
+        .ad-space {
+            background: #f9fafb;
+            border: 2px dashed #e5e7eb;
+            padding: 40px;
+            text-align: center;
+            margin: 40px 0;
+            border-radius: 8px;
+        }
+        
+        .ad-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🔬 Reproducibility Validator</h1>
+            <p>Verify your research code is reproducible. Free, fast, actionable.</p>
+        </div>
+    </header>
+
+    <section class="validator-section">
+        <div class="container">
+            <div class="validator-card">
+                <h2 style="margin-bottom: 30px;">Validate Your Repository</h2>
+                
+                <form id="validator-form">
+                    <div class="form-group">
+                        <label for="repo-url">GitHub/GitLab Repository URL</label>
+                        <input 
+                            type="url" 
+                            id="repo-url" 
+                            name="repo-url" 
+                            placeholder="https://github.com/username/repo"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn" id="submit-btn">
+                        Validate Reproducibility
+                    </button>
+                </form>
+                
+                <div class="results" id="results">
+                    <div class="score-display">
+                        <div class="score-number" id="score">85</div>
+                        <div class="score-label" id="rating">Good</div>
+                    </div>
+                    
+                    <h3>Category Breakdown</h3>
+                    <div class="categories" id="categories"></div>
+                    
+                    <div id="badge-section" style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <h3>Your Badge</h3>
+                        <img id="badge-img" src="" alt="Reproducibility Badge" style="margin: 15px 0;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Markdown:</label>
+                            <textarea id="badge-markdown" readonly style="width: 100%; padding: 10px; font-family: monospace; border-radius: 4px; border: 1px solid #ddd;"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h3>Recommendations</h3>
+                        <div id="recommendations-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ad Space -->
+            <div class="ad-space">
+                <div class="ad-label">Advertisement</div>
+                <div>Google AdSense / Carbon Ads Placement</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Use Reproducibility Validator?</h2>
+            
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast Analysis</h3>
+                    <p>Get results in seconds. No waiting, no queues.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Actionable Advice</h3>
+                    <p>Specific recommendations with code examples.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Journal-Ready Badges</h3>
+                    <p>Embed verification badges in papers and repos.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">💰</div>
+                    <h3>100% Free</h3>
+                    <p>Ad-supported, always free for researchers.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Comprehensive Checks</h3>
+                    <p>Environment, seeds, data, docs, tests.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Transparent Scoring</h3>
+                    <p>See exactly what affects your score.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Reproducibility Validator | <a href="https://github.com/craggles17/reproducibility-validator">GitHub</a></p>
+            <p style="margin-top: 10px; opacity: 0.7;">Helping researchers make science more reproducible, one repo at a time.</p>
+        </div>
+    </footer>
+
+    <script>
+        const form = document.getElementById('validator-form');
+        const resultsDiv = document.getElementById('results');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const repoUrl = document.getElementById('repo-url').value;
+            
+            // Disable button during analysis
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyzing...';
+            
+            try {
+                // Call API
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repo_url: repoUrl })
+                });
+                
+                const result = await response.json();
+                
+                // Display results
+                displayResults(result);
+                resultsDiv.classList.add('show');
+                
+            } catch (error) {
+                alert('Error analyzing repository. Please try again.');
+                console.error(error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Validate Reproducibility';
+            }
+        });
+        
+        function displayResults(result) {
+            // Score
+            const scoreEl = document.getElementById('score');
+            const ratingEl = document.getElementById('rating');
+            
+            scoreEl.textContent = Math.round(result.score);
+            scoreEl.className = 'score-number score-' + result.rating;
+            ratingEl.textContent = result.rating.charAt(0).toUpperCase() + result.rating.slice(1);
+            
+            // Categories
+            const categoriesEl = document.getElementById('categories');
+            categoriesEl.innerHTML = '';
+            
+            for (const [name, data] of Object.entries(result.category_scores)) {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.innerHTML = `
+                    <div class="category-name">${name.charAt(0).toUpperCase() + name.slice(1)}</div>
+                    <div class="category-score">${Math.round(data.score)}/100</div>
+                    <div style="font-size: 0.9rem; color: var(--gray);">
+                        ${data.points_earned}/${data.points_possible} points
+                    </div>
+                `;
+                categoriesEl.appendChild(card);
+            }
+            
+            // Badge
+            const badgeUrl = `/api/badge/${btoa(repoUrl)}`;
+            document.getElementById('badge-img').src = badgeUrl;
+            document.getElementById('badge-markdown').value = 
+                `[![Reproducibility](${window.location.origin}${badgeUrl})](${window.location.origin}?repo=${encodeURIComponent(repoUrl)})`;
+            
+            // Recommendations
+            const recsEl = document.getElementById('recommendations-list');
+            recsEl.innerHTML = '';
+            
+            result.recommendations.slice(0, 5).forEach(rec => {
+                const recDiv = document.createElement('div');
+                recDiv.className = 'recommendation';
+                recDiv.innerHTML = `
+                    <span class="rec-priority priority-${rec.priority}">${rec.priority.toUpperCase()}</span>
+                    <div class="rec-title">${rec.title}</div>
+                    <div>${rec.fix}</div>
+                    ${rec.example ? `<div class="rec-example">${rec.example}</div>` : ''}
+                `;
+                recsEl.appendChild(recDiv);
+            });
+        }
+    </script>
+</body>
+</html>
